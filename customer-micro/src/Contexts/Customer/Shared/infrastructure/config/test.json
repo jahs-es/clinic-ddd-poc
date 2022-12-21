@@ -1,0 +1,4 @@
+{
+  "mongo": { "url": "mongodb://localhost:27017/customer-backend-test" },
+  "typeorm": {"database": "customer-backend-dev"}
+}

@@ -1,0 +1,8 @@
+services:
+  Apps.customer.controllers.StatusGetController:
+    class: ../../controllers/StatusGetController
+    arguments: []
+
+  Apps.customer.controllers.CustomerController:
+    class: ../../controllers/CustomerController
+    arguments: ['@Customer.Shared.domain.CommandBus']

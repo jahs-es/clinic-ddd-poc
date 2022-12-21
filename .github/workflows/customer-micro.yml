@@ -1,0 +1,75 @@
+name: Customer micro
+
+on:
+  push:
+    branches:
+      - main
+      - development
+    tags:
+      - 'test*'
+    paths:
+      - 'customer-micro/**'
+      - '.github/workflows/customer-micro.yaml'
+
+env:
+  CACHE_FOLDER: customer-micro/node_modules
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12.16.3]
+        mongodb-version: [4.2]
+        elasticsearch-version: ['7.9.3']
+        rabbitmq-version: ['3.8.2-management-alpine']
+
+    steps:
+      - name: Getting source code
+        uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Node modules yarn cache
+        uses: actions/cache@v3
+        id: yarn-cache-api # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+        with:
+          path: ${{ env.CACHE_FOLDER }}
+          key: ${{ runner.os }}-yarn-customer-micro-${{ hashFiles('customer-micro/yarn.lock') }}
+
+      - name: Launch MongoDB
+        uses: wbari/start-mongoDB@v0.2
+        with:
+          mongoDBVersion: ${{ matrix.mongodb-version }}
+
+      - name: Launch RabbitMQ
+        uses: nijel/rabbitmq-action@v1.0.0
+        with:
+          rabbitmq version: ${{ matrix.rabbitmq-version }}
+
+      - name: Configure sysctl limits
+        run: |
+          sudo swapoff -a
+          sudo sysctl -w vm.swappiness=1
+          sudo sysctl -w fs.file-max=262144
+          sudo sysctl -w vm.max_map_count=262144
+
+      - name: Launch elasticsearch
+        uses: getong/elasticsearch-action@v1.2
+        with:
+          elasticsearch version: ${{ matrix.elasticsearch-version }}
+          host port: 9200
+          container port: 9200
+          host node port: 9300
+          node port: 9300
+          discovery type: 'single-node'
+
+      - name: Install
+        run: cd customer-micro && yarn install --frozen-lockfile
+
+      - name: Test
+        run: cd customer-micro && yarn test:unit

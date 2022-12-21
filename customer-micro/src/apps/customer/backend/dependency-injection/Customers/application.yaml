@@ -1,0 +1,14 @@
+services:
+  Customer.Customers.domain.CustomerRepository:
+    class: ../../../../../Contexts/Customer/Customers/infrastructure/persistence/MongoCustomerRepository
+    arguments: ['@Customer.Shared.ConnectionManager']
+
+  Customer.Customers.application.CustomerCreator:
+    class: ../../../../../Contexts/Customer/Customers/application/CustomerCreator
+    arguments: ['@Customer.Customers.domain.CustomerRepository', '@Customer.Shared.domain.EventBus']
+
+  Customer.customers.CreateCustomerCommandHandler:
+    class: ../../../../../Contexts/Customer/Customers/application/Create/CreateCustomerCommandHandler
+    arguments: ['@Customer.Customers.application.CustomerCreator']
+    tags:
+      - { name: 'commandHandler' }
