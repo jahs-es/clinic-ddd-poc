@@ -2,11 +2,11 @@ name: Customer micro
 
 on:
   push:
-    branches:
-      - main
-      - development
+#    branches:
+#      - main
+#      - development
     tags:
-      - 'test*'
+      - 'test'
     paths:
       - 'customer-micro/**'
       - '.github/workflows/customer-micro.yaml'
